@@ -66,4 +66,21 @@ proc OnTableReady(caller,nArea)
 
     SetJSContext(caller:LockJSContext())
     global := JSGlobalObject()
+    global["getRows"] := {|this,args| HB_SYMBOL_UNUSED(this), askRows(global["onRow"],nArea,args[1],args[2],args) }
     global["header"]:CallNoThis(aTableInfo)
+
+proc askRows(pCallback,nArea,nMin,nMax,args)
+    LOCAL i, j, data := {}
+    //? "askedRow",nArea,nMin,nMax,args[3],args[4]
+    dbSelectArea(nArea)
+    dbGoto(nMin)
+    for i:=1 to nMax-nMin
+        data := {}
+        ? "sending row",recno()
+        for j:=1 to FCount()
+            aAdd(data,FieldGet(j))
+            //?? FieldGet(i)
+        next
+        pCallback:CallNoThis(recno(),data,Deleted())
+        dbSkip()
+    next
