@@ -1,3 +1,4 @@
 **/*.dll
 **/*.lib
 **/*.exe
+hb_out.log
