@@ -1,0 +1,22 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "HBMK2",
+			"input": "dbfViewer.hbp",
+			"problemMatcher": [
+				"$harbour",
+				"$msCompile"
+			],
+			"label": "HBMK2: Builda dbfViewer.hbp",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"windows": {
+				"setupBatch": "c:\\harbour\\start64.bat"
+			}
+
+		}
+	]
+}
