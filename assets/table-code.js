@@ -30,11 +30,23 @@ function header(info,data) {
             }
         dest.appendChild(cell);
     }
+    var h2 = document.getElementsByTagName("thead")[0].children[0].clientHeight;;
+    document.getElementById("empty-scroll").style.height = (h2*(dbfInfo.nRecord+2)).toFixed(0)+"px";
+    document.body.onscroll = askCurrentRows;
+    window.onresize = askCurrentRows;
+    askCurrentRows();
+}
+
+function askCurrentRows() {
     var body = document.getElementsByTagName("tbody")[0];
     body.innerHTML="";
     var h1 = /*screen.height*/document.getElementsByTagName("body")[0].clientHeight;
     var h2 = document.getElementsByTagName("thead")[0].children[0].clientHeight;
-    getRows(1,Math.floor(h1/h2),h1,h2);
+    var firstPos = Math.floor(document.body.scrollTop / h2);
+    var maxTop = ((dbfInfo.nRecord+3)*h2)-h1;
+    document.body.children[0].style.top=Math.max(0,Math.min(maxTop,document.body.scrollTop))+"px";
+    getRows(firstPos+1,Math.floor(h1/h2),h1,h2);
+
 }
 
 function onRow(idx,data) {

@@ -125,14 +125,14 @@ proc OnTableReady(caller,nArea)
     // init the view
     global["header"]:CallNoThis(getDBInfo(),dbStruct())
 
-proc askRows(pCallback,nArea,nMin,nMax) //,args)
+proc askRows(pCallback,nArea,nMin,nCount) //,args)
     LOCAL i, j, data := {}
     //? "askedRow",nArea,nMin,nMax,args[3],args[4]
     dbSelectArea(nArea)
     dbGoto(nMin)
-    for i:=1 to nMax-nMin
+    for i:=1 to nCount
         data := {}
-        ? "sending row",recno()
+        //? "sending row",recno()
         for j:=1 to FCount()
             aAdd(data,FieldGet(j))
             //?? FieldGet(i)
