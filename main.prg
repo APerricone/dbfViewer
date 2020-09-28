@@ -1,11 +1,12 @@
 #include "ultralight.ch"
+#include <dbinfo.ch>
 
-STATIC toolbar, main_view
+STATIC toolbar, main_view, nCurrentArea
 #define TOOLBAR_HEIGHT 52
 
 proc main(cFile)
     LOCAL app := ultralight_app():Create()
-    LOCAL window := ultralight_window():Create(app:main_Monitor,300,300,.F.,ulWindowFlags_Titled + ulWindowFlags_Resizable + ulWindowFlags_Maximizable)
+    LOCAL window := ultralight_window():Create(app:main_Monitor,600,600,.F.,ulWindowFlags_Titled + ulWindowFlags_Resizable + ulWindowFlags_Maximizable)
     window:title := "DBF Viewer"
     app:window := window
     window:bOnResize := @OnResize()
@@ -38,7 +39,7 @@ proc OpenFile(pthis,cFile)
     main_view:view():LoadURL("file:///table.html")
     main_view:view():bOnChangeCursor := {|v,c| HB_SYMBOL_UNUSED(v), window:cursor := c}
     main_view:view():bOnDOMReady = {|view| OnTableReady(view,nArea)}
-
+    nCurrentArea := nArea
 
 proc OnResize(w,h)
     LOCAL y,window := ultralight_app():Instance():window
@@ -48,28 +49,83 @@ proc OnResize(w,h)
         main_view:Resize(w,h-y)
     endif
 
+proc ShowInfo()
+    LOCAL app, popupWindow, overlay
+    if empty(nCurrentArea)
+        tinyfd_messageBox("DBF Viewer - info","no file opened","ok","info")
+        return
+    endif
+    app := ultralight_app():Instance()
+    // it crashes
+    popupWindow :=  ultralight_window():Create(app:main_Monitor,200,600,.F.,ulWindowFlags_Titled)
+    overlay := ultralight_overlay():Create(popupWindow,popupWindow:width(),popupWindow:height(),0,0)
+    overlay:view():LoadURL("file:///info.html")
+    overlay:view():bOnChangeCursor := {|v,c| HB_SYMBOL_UNUSED(v), popupWindow:cursor := c}
+    overlay:view():bOnDOMReady = @OnInfoReady()
+
+proc OnInfoReady(caller)
+    LOCAL global
+    SetJSContext(caller:LockJSContext())
+    global := JSGlobalObject()
+    global["GetStruct"] := {|| GetString(.T.)}
+    global["CopyInfo"] := {|| GetString(.F.)}
+
+func GetString(lCode)
+    LOCAL i, aStruct := dbStruct()
+    LOCAL cRet := ""
+    if lCode
+        cRet += "{"+hb_eol()
+    endif
+    for i:=1 to len(aStruct)
+        if lCode
+            cRet+="{"
+            cRet+=PadL('"'+aStruct[i,1]+'"',12)+","
+            cRet+='"'+aStruct[i,2]+'"'+","
+            cRet+=str(aStruct[i,3],4)+","
+            cRet+=str(aStruct[i,4],2)+"}"
+            if(i!=len(aStruct))
+                cRet+=","
+            endif
+            cRet+=hb_eol()
+        else
+            cRet+=PadL(aStruct[i,1],10)+"("
+            cRet+=aStruct[i,2]+":"
+            cRet+=str(aStruct[i,3],4)
+            if aStruct[i,2]="N"
+                cRet+="."+str(aStruct[i,3],2)
+            endif
+            cRet+=")"+hb_eol()
+        endif
+    next
+return cRet
+
 proc OnToolbarReady(caller)
     LOCAL global
     SetJSContext(caller:LockJSContext())
     global := JSGlobalObject()
     global["OpenFile"] := @OpenFile()
+    //global["ShowInfo"] := @ShowInfo()
+
+func getDBInfo()
+    LOCAL dbInfo := {=>}, lastMod := LUpdate()
+    dbInfo["version"] :=  dbInfo( DBI_DB_VERSION )
+    dbInfo["year"] :=  Year(lastMod)
+    dbInfo["month"] :=  Month(lastMod)
+    dbInfo["day"] :=  Day(lastMod)
+    dbInfo["nRecord"] := RecCount()
+return dbInfo
 
 proc OnTableReady(caller,nArea)
-    LOCAL global, aTableInfo := {}, aStruct
-    LOCAL i
-
+    LOCAL global
     dbSelectArea(nArea)
-    aStruct := dbStruct()
-    for i:=1 to len(aStruct)
-        aAdd(aTableInfo,{"name"=>aStruct[i,1],"type"=>aStruct[i,2],"len"=>aStruct[i,3],"dec"=>aStruct[i,4] })
-    next
 
     SetJSContext(caller:LockJSContext())
     global := JSGlobalObject()
     global["getRows"] := {|this,args| HB_SYMBOL_UNUSED(this), askRows(global["onRow"],nArea,args[1],args[2],args) }
-    global["header"]:CallNoThis(aTableInfo)
+    // init the view
+    global["header"]:CallNoThis(getDBInfo(),dbStruct())
 
-proc askRows(pCallback,nArea,nMin,nMax,args)
+proc askRows(pCallback,nArea,nMin,nMax) //,args)
     LOCAL i, j, data := {}
     //? "askedRow",nArea,nMin,nMax,args[3],args[4]
     dbSelectArea(nArea)

@@ -1,0 +1,47 @@
+<html>
+    <head>
+        <script>
+            function copyToClipboard(txt) {
+                /** @type {HTMLTextAreaElement} */
+                var textArea = document.getElementById("temp");
+                textArea.value = txt;
+                textArea.focus();
+                textArea.select();
+                document.execCommand('copy');
+            }
+            function ShowInfo(info,dbfCols) {
+                var output = document.getElementById("output");
+                var html = `<h1>${info.fileName}</h1>`
+                txt+=`<p><b>version:</b> ${dbfInfo.version}</p>`
+                var lastMod = new Date(dbfInfo.year,dbfInfo.month,dbfInfo.day);
+                var dateOpt = { year: "numeric", month: "2-digit", day: "2-digit"};
+                var dFormat = new Intl.DateTimeFormat(navigator.language, dateOpt);
+                txt+=`<p><b>last modified date:</b> ${dFormat.format(lastMod)}</p>`
+                txt+=`<p><b># records:</b> ${dbfInfo.nRecord}</p>`
+                txt+= "<h2>Columns</h2>";
+                for (let i = 0; i < dbfCols.length; i++) {
+                    const colInfo = dbfCols[i];
+                    if(colInfo.type=="N")
+                        txt+=`<p><b class="nCol">${colInfo.name}</b>(${colInfo.type}:${colInfo.len}.${colInfo.dec})</p>`
+                    else
+                        txt+=`<p><b class="${colInfo.type.toLowerCase()}Col">${colInfo.name}</b>(${colInfo.type}:${colInfo.len})</p>`
+                }
+            }
+            document.addEventListener('DOMContentLoaded', (event) => {
+                document.getElementById("struct").onclick = () => { copyToClipboard(GetStruct()); }
+                document.getElementById("info").onclick = () => { copyToClipboard(CopyInfo()); }
+            });
+        </script>
+    </head>
+    <body>
+        <div id="output">
+
+        </div>
+        <div>
+            <button id="struct" value="copy struct"></button>
+            <button id="info" value="copy info"></button>
+            <textarea id="temp" style="display: none;"></textarea>
+        </div>
+
+    </body>
+</html>

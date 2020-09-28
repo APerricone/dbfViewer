@@ -1,6 +1,7 @@
-var dbfCols;
+var dbfInfo,dbfCols;
 
-function header(data) {
+function header(info,data) {
+    dbfInfo = info;
     dbfCols = data;
     var dest = document.getElementsByTagName("thead");
     dest = dest[0].children[0];
@@ -12,11 +13,11 @@ function header(data) {
     for (let id = 0; id < data.length; id++) {
         /** @type {HTMLElement} */
         var cell = document.createElement("th");
-        cell.textContent = data[id].name;
-        cell.title = data[id].name;
-        cell.style.width = cell.style.maxWidth = cell.style.minWidth = data[id].len+"ch";
+        cell.textContent = data[id][0];
+        cell.title = data[id][0];
+        cell.style.width = cell.style.maxWidth = cell.style.minWidth = data[id][2]+"ch";
         cell.style.overflow = "hidden";
-        switch(data[id].type) {
+        switch(data[id][1]) {
             case "D":
                 cell.style.width = cell.style.maxWidth = cell.style.minWidth = "10ch";
                 break;
@@ -33,7 +34,7 @@ function header(data) {
     body.innerHTML="";
     var h1 = /*screen.height*/document.getElementsByTagName("body")[0].clientHeight;
     var h2 = document.getElementsByTagName("thead")[0].children[0].clientHeight;
-    getRows(1,Math.floor(h1/h2)-1,h1,h2);
+    getRows(1,Math.floor(h1/h2),h1,h2);
 }
 
 function onRow(idx,data) {
@@ -49,7 +50,7 @@ function onRow(idx,data) {
         /** @type {HTMLElement} */
         var cell = document.createElement("td");
         cell.textContent = data[id];
-        switch(dbfCols[id].type) {
+        switch(dbfCols[id][1]) {
             case "C":
                 cell.className = "cCol";
                 break;
