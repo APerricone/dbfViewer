@@ -1,6 +1,25 @@
 var dbfInfo,dbfCols;
 
 document.addEventListener('DOMContentLoaded', (event) => {
+    document.body.addEventListener("keypress", (evt) => {
+        console.log("keypress:"+evt.key)
+        switch(evt.key) {
+            case "Home":
+                if(evt.ctrlKey) {
+                    document.body.scrollTo({top:0});
+                    askCurrentRows();
+                } else
+                    document.body.scrollTo({left:0});
+                break;
+            case "End":
+                if(evt.ctrlKey) {
+                    document.body.scrollTo({top:document.body.scrollHeight});
+                    askCurrentRows();
+                } else
+                    document.body.scrollTo({left:document.body.scrollWidth});
+                break;
+        }
+    });
 });
 
 function header(info,data) {
@@ -11,6 +30,7 @@ function header(info,data) {
 
     var cell = document.createElement("th");
     cell.className = "noborder";
+    cell.style.width = cell.style.maxWidth = cell.style.minWidth = (info.nRecord+"").length+"ch";
     dest.appendChild(cell);
 
     for (let id = 0; id < data.length; id++) {
@@ -102,8 +122,9 @@ function changeOrder(evt) {
     });
     if(sortOrder!="") {
         element.classList.add("sort-"+sortOrder);
-        setOrder(index);
+        setOrder(index,sortOrder);
     } else
-        setOrder(-1);
+        setOrder(-1,undefined);
     askCurrentRows();
 }
+

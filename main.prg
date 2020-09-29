@@ -38,8 +38,18 @@ proc OpenFile(pthis,cFile)
     main_view := ultralight_overlay():Create(window,window:width(),window:height()-y,0,y)
     main_view:view():LoadURL("file:///table.html")
     main_view:view():bOnChangeCursor := {|v,c| HB_SYMBOL_UNUSED(v), window:cursor := c}
-    main_view:view():bOnDOMReady = {|view| OnTableReady(view,nArea)}
+    main_view:view():bOnDOMReady := {|view| OnTableReady(view,nArea)}
+    main_view:view():bOnAddConsoleMessage := @onConsole()
     nCurrentArea := nArea
+
+proc onConsole(oView,iSource,iLevel,cMessage,iLine_number,iColumn_number,cSource_id)
+    HB_SYMBOL_UNUSED(oView)
+    HB_SYMBOL_UNUSED(iSource)
+    HB_SYMBOL_UNUSED(iLevel)
+    HB_SYMBOL_UNUSED(iLine_number)
+    HB_SYMBOL_UNUSED(iColumn_number)
+    HB_SYMBOL_UNUSED(cSource_id)
+    ? cMessage
 
 proc OnResize(w,h)
     LOCAL y,window := ultralight_app():Instance():window
@@ -122,24 +132,32 @@ proc OnTableReady(caller,nArea)
     SetJSContext(caller:LockJSContext())
     global := JSGlobalObject()
     global["getRows"] := {|this,args| HB_SYMBOL_UNUSED(this), askRows(global["onRow"],nArea,args[1],args[2],args) }
-    global["setOrder"] := {|this,args| HB_SYMBOL_UNUSED(this), setOrder(nArea,args[1])}
+    global["setOrder"] := {|this,args| HB_SYMBOL_UNUSED(this), setOrder(nArea,args[1],args[2])}
     // init the view
     global["header"]:CallNoThis(getDBInfo(),dbStruct())
 
-proc setOrder(nArea,nColumn)
+proc setOrder(nArea,nColumn,cOrder)
     LOCAL cCode
     dbSelectArea(nArea)
     ordDestroy("TMP_VIEWER")
     if(nColumn>0)
         cCode := FieldName(nColumn)
-        INDEX ON &(cCode) TAG "TMP_VIEWER" TEMPORARY
+        if cOrder="asc"
+            INDEX ON &(cCode) TAG "TMP_VIEWER" TEMPORARY
+        else
+            INDEX ON &(cCode) TAG "TMP_VIEWER" TEMPORARY DESCENDING
+        endif
     endif
 
 proc askRows(pCallback,nArea,nMin,nCount) //,args)
     LOCAL i, j, data := {}
     //? "askedRow",nArea,nMin,nMax,args[3],args[4]
     dbSelectArea(nArea)
-    dbGoto(nMin)
+    dbGoTop()
+    if nMin>0
+        dbSkip(nMin-1)
+    endif
+    //dbGoto(nMin)
     for i:=1 to nCount
         data := {}
         //? "sending row",recno()
