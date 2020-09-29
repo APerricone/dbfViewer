@@ -1,6 +1,7 @@
 var dbfInfo,dbfCols;
 
 document.addEventListener('DOMContentLoaded', (event) => {
+    //header({nRecord:0},[["ciao","C",10,0]]);
     document.body.addEventListener("keypress", (evt) => {
         console.log("keypress:"+evt.key)
         switch(evt.key) {
@@ -25,13 +26,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
 function header(info,data) {
     dbfInfo = info;
     dbfCols = data;
-    var dest = document.getElementsByTagName("thead");
-    dest = dest[0].children[0];
+    var dest = document.getElementsByTagName("thead")[0].children;
 
-    var cell = document.createElement("th");
-    cell.className = "noborder";
-    cell.style.width = cell.style.maxWidth = cell.style.minWidth = (info.nRecord+"").length+"ch";
-    dest.appendChild(cell);
+    for(let i=0;i<2;i++) {
+        var cell = document.createElement("th");
+        cell.className = "noborder";
+        cell.style.width = cell.style.maxWidth = cell.style.minWidth = (info.nRecord+"").length+"ch";
+        dest[i].appendChild(cell);
+    }
 
     for (let id = 0; id < data.length; id++) {
         /** @type {HTMLElement} */
@@ -52,13 +54,24 @@ function header(info,data) {
                 break;
             }
         cell.onclick = changeOrder
-        dest.appendChild(cell);
+        dest[0].appendChild(cell);
+        var cell = document.createElement("td");
+        var textBox = document.createElement("input");
+        textBox.addEventListener("keyup",applyFilter);
+        cell.appendChild(textBox);
+        dest[1].appendChild(cell);
     }
-    var h2 = document.getElementsByTagName("thead")[0].children[0].clientHeight;;
+    var h2 = document.getElementsByTagName("thead")[0].children[0].clientHeight;
     document.getElementById("empty-scroll").style.height = (h2*(dbfInfo.nRecord+2)).toFixed(0)+"px";
     document.body.onscroll = askCurrentRows;
     window.onresize = askCurrentRows;
     askCurrentRows();
+}
+
+function setHeight(nRow) {
+    console.log("setHeight")
+    var h2 = document.getElementsByTagName("thead")[0].children[0].clientHeight;
+    document.getElementById("empty-scroll").style.height = (h2*(nRow+2)).toFixed(0)+"px";
 }
 
 function askCurrentRows() {
@@ -103,6 +116,7 @@ function onRow(idx,data) {
     body.appendChild(dest);
 }
 
+var updateOrderTimeout;
 /**
  *
  * @param {MouseEvent} evt
@@ -120,11 +134,39 @@ function changeOrder(evt) {
         ele.classList.remove("sort-asc");
         ele.classList.remove("sort-desc");
     });
+
     if(sortOrder!="") {
         element.classList.add("sort-"+sortOrder);
-        setOrder(index,sortOrder);
-    } else
-        setOrder(-1,undefined);
-    askCurrentRows();
+    }
+    clearTimeout(updateOrderTimeout);
+    updateOrder();
 }
 
+/**
+ *
+ * @param {KeyboardEvent} evt
+ */
+function applyFilter(evt) {
+    clearTimeout(updateOrderTimeout);
+    updateOrderTimeout = setTimeout(updateOrder,100)
+}
+
+function updateOrder() {
+    var dest = document.getElementsByTagName("thead")[0].children;
+    var index = Array.prototype.findIndex.call(dest[0].children,
+        (e)=> e.classList.contains("sort-dest") || e.classList.contains("sort-asc"));
+    var sortOrder = ""
+    if(index>=0) {
+        var sortHeader = dest[0].children[index];
+        if (sortHeader.classList.contains("sort-dest"))
+            sortOrder = "desc"; else sortOrder = "asc";
+    }
+    var filters = [];
+    for(let i=1;i<dest[1].children.length;++i) {
+        /** @type {HTMLInputElement} */
+        var txt = dest[1].children[i].children[0];
+        filters.push( txt.value );
+    }
+    setOrder(index,sortOrder,filters);
+    askCurrentRows();
+}

@@ -132,22 +132,30 @@ proc OnTableReady(caller,nArea)
     SetJSContext(caller:LockJSContext())
     global := JSGlobalObject()
     global["getRows"] := {|this,args| HB_SYMBOL_UNUSED(this), askRows(global["onRow"],nArea,args[1],args[2],args) }
-    global["setOrder"] := {|this,args| HB_SYMBOL_UNUSED(this), setOrder(nArea,args[1],args[2])}
+    global["setOrder"] := {|this,args| HB_SYMBOL_UNUSED(this), setOrder(global["setHeight"],nArea,args[1],args[2],args[3])}
     // init the view
     global["header"]:CallNoThis(getDBInfo(),dbStruct())
 
-proc setOrder(nArea,nColumn,cOrder)
-    LOCAL cCode
+proc setOrder(pSetHeight,nArea,nColumn,cOrder, aFilters)
+    LOCAL cOrderName := "recno()", cFilter := ".T.", i
     dbSelectArea(nArea)
     ordDestroy("TMP_VIEWER")
     if(nColumn>0)
-        cCode := FieldName(nColumn)
-        if cOrder="asc"
-            INDEX ON &(cCode) TAG "TMP_VIEWER" TEMPORARY
-        else
-            INDEX ON &(cCode) TAG "TMP_VIEWER" TEMPORARY DESCENDING
-        endif
+        cOrderName := FieldName(nColumn)
+    else
+        cOrder = "asc"
     endif
+    for i:=1 to len(aFilters)
+        if(!empty(aFilters[i]))
+            cFilter+=" .and. ('"+aFilters[i]+"' $ "+FieldName(i)+")"
+        endif
+    next
+    if cOrder="asc"
+        INDEX ON &(cOrderName) TAG "TMP_VIEWER" TEMPORARY FOR &(cFilter)
+    else
+        INDEX ON &(cOrderName) TAG "TMP_VIEWER" TEMPORARY FOR &(cFilter) DESCENDING
+    endif
+    //pSetHeight:CallNoThis(ordCount())
 
 proc askRows(pCallback,nArea,nMin,nCount) //,args)
     LOCAL i, j, data := {}
