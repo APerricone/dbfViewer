@@ -1,5 +1,8 @@
 var dbfInfo,dbfCols;
 
+document.addEventListener('DOMContentLoaded', (event) => {
+});
+
 function header(info,data) {
     dbfInfo = info;
     dbfCols = data;
@@ -28,6 +31,7 @@ function header(info,data) {
                 cell.style.width = cell.style.maxWidth = cell.style.minWidth = "22ch";
                 break;
             }
+        cell.onclick = changeOrder
         dest.appendChild(cell);
     }
     var h2 = document.getElementsByTagName("thead")[0].children[0].clientHeight;;
@@ -79,3 +83,27 @@ function onRow(idx,data) {
     body.appendChild(dest);
 }
 
+/**
+ *
+ * @param {MouseEvent} evt
+ */
+function changeOrder(evt) {
+    /** @type{HTMLElement} */
+    var element = evt.target;
+    var index = Array.prototype.indexOf.call(element.parentNode.children, element);
+    var sortOrder = "asc"
+    if(element.classList.contains("sort-asc"))
+        sortOrder = "desc"
+    else if(element.classList.contains("sort-desc"))
+        sortOrder = ""
+    Array.prototype.forEach.call(element.parentNode.children, ele => {
+        ele.classList.remove("sort-asc");
+        ele.classList.remove("sort-desc");
+    });
+    if(sortOrder!="") {
+        element.classList.add("sort-"+sortOrder);
+        setOrder(index);
+    } else
+        setOrder(-1);
+    askCurrentRows();
+}

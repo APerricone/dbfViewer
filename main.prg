@@ -122,8 +122,18 @@ proc OnTableReady(caller,nArea)
     SetJSContext(caller:LockJSContext())
     global := JSGlobalObject()
     global["getRows"] := {|this,args| HB_SYMBOL_UNUSED(this), askRows(global["onRow"],nArea,args[1],args[2],args) }
+    global["setOrder"] := {|this,args| HB_SYMBOL_UNUSED(this), setOrder(nArea,args[1])}
     // init the view
     global["header"]:CallNoThis(getDBInfo(),dbStruct())
+
+proc setOrder(nArea,nColumn)
+    LOCAL cCode
+    dbSelectArea(nArea)
+    ordDestroy("TMP_VIEWER")
+    if(nColumn>0)
+        cCode := FieldName(nColumn)
+        INDEX ON &(cCode) TAG "TMP_VIEWER" TEMPORARY
+    endif
 
 proc askRows(pCallback,nArea,nMin,nCount) //,args)
     LOCAL i, j, data := {}

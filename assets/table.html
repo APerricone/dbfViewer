@@ -13,9 +13,20 @@
                 padding: 0.2em;
                 white-space: pre;
             }
+            th {
+                cursor: pointer;
+                background-position-x: right;
+                background-repeat: no-repeat no-repeat;
+            }
             .noborder {
                 border: none;
                 background-color: transparent;
+            }
+            .sort-asc {
+                background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" fill="black"><path d="M1 7L7 7 4 1"/></svg>');
+            }
+            .sort-desc {
+                background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" fill="black"><path d="M1 1L7 1 4 7"/></svg>');
             }
         </style>
         <script src="table-code.js"></script>
