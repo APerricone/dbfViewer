@@ -3,7 +3,7 @@ var dbfInfo,dbfCols;
 document.addEventListener('DOMContentLoaded', (event) => {
     //header({nRecord:0},[["ciao","C",10,0]]);
     document.body.addEventListener("keypress", (evt) => {
-        console.log("keypress:"+evt.key)
+        //console.log("keypress:"+evt.key)
         switch(evt.key) {
             case "Home":
                 if(evt.ctrlKey) {
@@ -69,8 +69,8 @@ function header(info,data) {
 }
 
 function setHeight(nRow) {
-    console.log("setHeight")
     var h2 = document.getElementsByTagName("thead")[0].children[0].clientHeight;
+    //console.log(h2+":"+nRow+"=>"+document.getElementById("empty-scroll").style.height+" = "+(h2*(nRow+2)).toFixed(0)+"px")
     document.getElementById("empty-scroll").style.height = (h2*(nRow+2)).toFixed(0)+"px";
 }
 

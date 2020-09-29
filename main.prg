@@ -147,19 +147,27 @@ proc setOrder(pSetHeight,nArea,nColumn,cOrder, aFilters)
     endif
     for i:=1 to len(aFilters)
         if(!empty(aFilters[i]))
-            cFilter+=" .and. ('"+aFilters[i]+"' $ "+FieldName(i)+")"
+            switch FieldType(i)
+                case "C"
+                    cFilter+=" .and. ('"+upper(aFilters[i])+"' $ upper("+FieldName(i)+"))"
+                    exit
+                case "N"
+                case "I"
+                    cFilter+=" .and. ("+StrTran(aFilters[i],",",".")+"="+FieldName(i)+")"
+                    exit
+            end switch
         endif
     next
+    //? cFilter
     if cOrder="asc"
         INDEX ON &(cOrderName) TAG "TMP_VIEWER" TEMPORARY FOR &(cFilter)
     else
         INDEX ON &(cOrderName) TAG "TMP_VIEWER" TEMPORARY FOR &(cFilter) DESCENDING
     endif
-    //pSetHeight:CallNoThis(ordCount())
+    pSetHeight:CallNoThis(ordKeyCount())
 
 proc askRows(pCallback,nArea,nMin,nCount) //,args)
     LOCAL i, j, data := {}
-    //? "askedRow",nArea,nMin,nMax,args[3],args[4]
     dbSelectArea(nArea)
     dbGoTop()
     if nMin>0
@@ -168,10 +176,11 @@ proc askRows(pCallback,nArea,nMin,nCount) //,args)
     //dbGoto(nMin)
     for i:=1 to nCount
         data := {}
-        //? "sending row",recno()
+        if eof()
+            exit
+        endif
         for j:=1 to FCount()
             aAdd(data,FieldGet(j))
-            //?? FieldGet(i)
         next
         pCallback:CallNoThis(recno(),data,Deleted())
         dbSkip()
