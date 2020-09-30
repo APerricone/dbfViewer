@@ -2,24 +2,30 @@ var dbfInfo,dbfCols;
 
 document.addEventListener('DOMContentLoaded', (event) => {
     //header({nRecord:0},[["ciao","C",10,0]]);
-    document.body.addEventListener("keypress", (evt) => {
-        //console.log("keypress:"+evt.key)
-        switch(evt.key) {
-            case "Home":
-                if(evt.ctrlKey) {
-                    document.body.scrollTo({top:0});
-                    askCurrentRows();
-                } else
-                    document.body.scrollTo({left:0});
+    document.body.addEventListener("keydown", (evt) => {
+        console.log("keydown:"+evt.key+"-"+evt.char+"-"+evt.charCode+"-"+evt.keyCode+"-"+evt.code)
+        switch(evt.keyCode) {//(evt.key) {
+            case 33://"PageUp":
+                document.body.scrollTo({top:document.body.scrollTop-document.body.clientHeight});
                 break;
-            case "End":
+            case 34://"PageDown":
+                document.body.scrollTo({top:document.body.scrollTop+document.body.clientHeight});
+                break;
+            case 35://"End":
                 if(evt.ctrlKey) {
                     document.body.scrollTo({top:document.body.scrollHeight});
                     askCurrentRows();
                 } else
                     document.body.scrollTo({left:document.body.scrollWidth});
                 break;
-        }
+            case 36: //"Home":
+                if(evt.ctrlKey) {
+                    document.body.scrollTo({top:0});
+                    askCurrentRows();
+                } else
+                    document.body.scrollTo({left:0});
+                break;
+            }
     });
 });
 
@@ -77,7 +83,7 @@ function setHeight(nRow) {
 function askCurrentRows() {
     var body = document.getElementsByTagName("tbody")[0];
     body.innerHTML="";
-    var h1 = /*screen.height*/document.getElementsByTagName("body")[0].clientHeight;
+    var h1 = /*screen.height*/document.body.clientHeight;
     var h2 = document.getElementsByTagName("thead")[0].children[0].clientHeight;
     var firstPos = Math.floor(document.body.scrollTop / h2);
     var maxTop = ((dbfInfo.nRecord+3)*h2)-h1;
