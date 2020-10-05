@@ -3,6 +3,7 @@
         <style>
             body {
                 font-family: 'Courier New', Courier, monospace;
+                overflow-y: hidden;
             }
             table {
                 border-collapse: collapse;
@@ -28,6 +29,15 @@
             .sort-desc {
                 background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" fill="black"><path d="M1 1L7 1 4 7"/></svg>');
             }
+            #scrolling-zone {
+                display: block;
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                right: 0;
+                width: 20px;
+                overflow-y: scroll;
+            }
         </style>
         <script src="table-code.js"></script>
     </head>
@@ -36,6 +46,8 @@
             <thead><tr></tr><tr></tr></thead>
             <tbody></tbody>
         </table>
-        <div id="empty-scroll"></div>
+        <div id="scrolling-zone">
+            <div id="empty-scroll" style="height: 1000px;" ></div>
+        </div>
     </body>
 </html>

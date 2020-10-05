@@ -1,32 +1,40 @@
 var dbfInfo,dbfCols;
 
 document.addEventListener('DOMContentLoaded', (event) => {
-    //header({nRecord:0},[["ciao","C",10,0]]);
+    //header({nRecord:1000},[["ciao","C",10,0]]);
     document.body.addEventListener("keydown", (evt) => {
-        console.log("keydown:"+evt.key+"-"+evt.char+"-"+evt.charCode+"-"+evt.keyCode+"-"+evt.code)
+        //console.log("keydown:"+evt.key+"-"+evt.char+"-"+evt.charCode+"-"+evt.keyCode+"-"+evt.code)
+        var scrollZone = document.getElementById("scrolling-zone");
         switch(evt.keyCode) {//(evt.key) {
             case 33://"PageUp":
-                document.body.scrollTo({top:document.body.scrollTop-document.body.clientHeight});
+                scrollZone.scrollTo({top:scrollZone.scrollTop-scrollZone.clientHeight});
                 break;
             case 34://"PageDown":
-                document.body.scrollTo({top:document.body.scrollTop+document.body.clientHeight});
+                scrollZone.scrollTo({top:scrollZone.scrollTop+scrollZone.clientHeight});
                 break;
             case 35://"End":
                 if(evt.ctrlKey) {
-                    document.body.scrollTo({top:document.body.scrollHeight});
+                    scrollZone.scrollTo({top:scrollZone.scrollHeight});
                     askCurrentRows();
                 } else
-                    document.body.scrollTo({left:document.body.scrollWidth});
+                scrollZone.scrollTo({left:scrollZone.scrollWidth});
                 break;
             case 36: //"Home":
                 if(evt.ctrlKey) {
-                    document.body.scrollTo({top:0});
+                    scrollZone.scrollTo({top:0});
                     askCurrentRows();
                 } else
-                    document.body.scrollTo({left:0});
+                scrollZone.scrollTo({left:0});
                 break;
             }
     });
+    document.body.addEventListener("wheel", (evt) => {
+        //console.log("whell:"+evt.deltaX+","+evt.deltaY+","+evt.deltaZ)
+        if(evt.deltaX==0)
+            evt.preventDefault()
+        var scrollZone = document.getElementById("scrolling-zone");
+        scrollZone.scrollTo({top:scrollZone.scrollTop+evt.deltaY});
+    })
 });
 
 function header(info,data) {
@@ -69,7 +77,7 @@ function header(info,data) {
     }
     var h2 = document.getElementsByTagName("thead")[0].children[0].clientHeight;
     document.getElementById("empty-scroll").style.height = (h2*(dbfInfo.nRecord+2)).toFixed(0)+"px";
-    document.body.onscroll = askCurrentRows;
+    document.getElementById("scrolling-zone").onscroll = askCurrentRows;
     window.onresize = askCurrentRows;
     askCurrentRows();
 }
@@ -83,12 +91,12 @@ function setHeight(nRow) {
 function askCurrentRows() {
     var body = document.getElementsByTagName("tbody")[0];
     body.innerHTML="";
-    var h1 = /*screen.height*/document.body.clientHeight;
+    var h1 = /*screen.height*/document.body.clientHeight-16;
     var h2 = document.getElementsByTagName("thead")[0].children[0].clientHeight;
-    var firstPos = Math.floor(document.body.scrollTop / h2);
+    var firstPos = Math.floor(document.getElementById("scrolling-zone").scrollTop / h2);
     var maxTop = ((dbfInfo.nRecord+3)*h2)-h1;
-    document.body.children[0].style.top=Math.max(0,Math.min(maxTop,document.body.scrollTop))+"px";
-    getRows(firstPos+1,Math.floor(h1/h2),h1,h2);
+    //document.body.children[0].style.top=(Math.max(0,Math.min(maxTop,document.body.scrollTop))+8)+"px";
+    getRows(firstPos+1,Math.floor(h1/h2)-2,h1,h2);
 
 }
 

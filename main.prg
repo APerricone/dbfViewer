@@ -114,7 +114,7 @@ proc OnToolbarReady(caller)
     SetJSContext(caller:LockJSContext())
     global := JSGlobalObject()
     global["OpenFile"] := @OpenFile()
-    //global["ShowInfo"] := @ShowInfo()
+    global["ShowInfo"] := @ShowInfo()
 
 func getDBInfo()
     LOCAL dbInfo := {=>}, lastMod := LUpdate()
